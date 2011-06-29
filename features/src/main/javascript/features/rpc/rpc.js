@@ -374,13 +374,7 @@ gadgets.rpc = function() {
 
     // Cast to a String to avoid an index lookup.
     id = String(id);
-    
-    // Try window.frames first
-    var target = window.frames[id];
-    if (target) {
-      return target;
-    }
-    
+
     // Fall back to getElementById()
     target = document.getElementById(id);
     if (target && target.contentWindow) {
@@ -450,25 +444,23 @@ gadgets.rpc = function() {
    * @return {boolean}
    */
   function callSameDomain(target, rpc) {
-    if (typeof sameDomain[target] === 'undefined') {
-      // Seed with a negative, typed value to avoid
-      // hitting this code path repeatedly.
-      sameDomain[target] = false;
-      var targetRelay = gadgets.rpc.getRelayUrl(target);
-      if (getOrigin(targetRelay) !== getOrigin(window.location.href)) {
-        // Not worth trying -- avoid the error and just return.
-        return false;
-      }
+    // Seed with a negative, typed value to avoid
+    // hitting this code path repeatedly.
+    sameDomain[target] = false;
+    var targetRelay = gadgets.rpc.getRelayUrl(target);
+    if (getOrigin(targetRelay) !== getOrigin(window.location.href)) {
+      // Not worth trying -- avoid the error and just return.
+      return false;
+    }
 
-      var targetEl = getTargetWin(target);
-      try {
-        // If this succeeds, then same-domain policy applied
-        sameDomain[target] = targetEl.gadgets.rpc.receiveSameDomain;
-      } catch (e) {
-        // Shouldn't happen due to origin check. Caught to emit
-        // more meaningful error to the caller.
-        gadgets.error("Same domain call failed: parent= incorrectly set.");
-      }
+    var targetEl = getTargetWin(target);
+    try {
+      // If this succeeds, then same-domain policy applied
+      sameDomain[target] = targetEl.gadgets.rpc.receiveSameDomain;
+    } catch (e) {
+      // Shouldn't happen due to origin check. Caught to emit
+      // more meaningful error to the caller.
+      gadgets.error("Same domain call failed: parent= incorrectly set.");
     }
 
     if (typeof sameDomain[target] === 'function') {
